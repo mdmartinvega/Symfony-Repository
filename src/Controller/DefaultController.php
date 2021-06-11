@@ -41,7 +41,7 @@ class DefaultController extends AbstractController
         $name = 'Loli';
 
         return $this->render('default/index.html.twig', [
-            'nombre'=>$name
+            'people'=> self::PEOPLE
         ]);   
     }
     /**
