@@ -5,7 +5,9 @@ namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 
@@ -26,8 +28,13 @@ class DefaultController extends AbstractController
      * El primer parámetro de Route es la URL a la que queremos asociar la acción.
      * El segundo parámetro de Route es el nombre que queremos dar a la ruta
      */
-    public function index(): Response 
+    public function index(Request $solicitud): Response 
     {
+        echo '<pre>query id: '; var_dump($solicitud->query->get('id')); echo '</pre>';
+        // echo '<pre>request: '; var_dump($solicitud->request); echo '</pre>';
+        // echo '<pre>server: '; var_dump($solicitud->server); echo '</pre>';
+        // echo '<pre>file: '; var_dump($solicitud->files); echo '</pre>';
+
         //Una acción siempre debe devolver una respuesta.
         //Por defecto deberá ser un objeto de la clase
         //Symfony\Component\HttpFoundation\Response;
@@ -63,12 +70,51 @@ class DefaultController extends AbstractController
      * El comando:
      * symfony console router:match /default.json
      * buscará la acción coincidente con la ruta indicada 
-     * y mostrarça la información asociada
+     * y mostrará la información asociada
      */
     public function indexJson(): JsonResponse {
         // return $this->json(self::PEOPLE);Equivalente a lo de abajo
         return new JsonResponse(self::PEOPLE);
     }
+
+     /**
+     * @Route(
+     *      "/default/{id}",
+     *      name="default_show",
+     *      requirements = {
+     *          "id": "[0-3]"
+     *      }
+     * )
+     */
+    public function show(int $id): Response {
+        // var_dump($id); die();
+        return $this->render('default/show.html.twig', [
+            'id' => $id,
+            'person' => self::PEOPLE[$id]
+        ]);
+    }
+
+    /**
+     * @Route("/redirect-to-home", name="default_redirect_to_home")
+     */
+
+    public function redirectToHome(): Response {
+        //Redirigir a la URL /
+        // return $this->redirect('/');
+
+        //Redirigir a una ruta utilizando su nombre
+        // return $this->redirectToRoute('default_show', ['id' => 1]);
+
+        //Devolver directamente un objeto RedirectResponse
+        return new RedirectResponse('/', Response::HTTP_TEMPORARY_REDIRECT);
+
+    }
+
+    //EJERCICIO
+    //Crear el recurso para obtener una representación
+    //de UN empleado enb formato JSON
+
+
 
    
 }
