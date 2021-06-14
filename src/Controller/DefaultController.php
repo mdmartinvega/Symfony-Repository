@@ -114,7 +114,25 @@ class DefaultController extends AbstractController
     //Crear el recurso para obtener una representación
     //de UN empleado enb formato JSON
 
+    /**
+     * @Route(
+     *      "/default.{_format}/{id}", 
+     *      name="default_show_json",
+     *      requirements = {
+     *          "_format": "json",
+     *          "id": "[0-3]"
+     *      }
+     * )
+     * 
+     * El comando:
+     * symfony console router:match /default.json
+     * buscará la acción coincidente con la ruta indicada 
+     * y mostrará la información asociada
+     */
+    public function userJson(): JsonResponse {
 
-
+        return $this->json(self::PEOPLE['id']);
+        // return new JsonResponse(self::PEOPLE['id']);
+    }
    
 }
