@@ -116,7 +116,7 @@ class DefaultController extends AbstractController
 
     /**
      * @Route(
-     *      "/default.{_format}/{id}", 
+     *      "/default/{id}.{_format}", 
      *      name="default_show_json",
      *      requirements = {
      *          "_format": "json",
@@ -129,10 +129,16 @@ class DefaultController extends AbstractController
      * buscará la acción coincidente con la ruta indicada 
      * y mostrará la información asociada
      */
-    public function userJson(): JsonResponse {
-
-        return $this->json(self::PEOPLE['id']);
-        // return new JsonResponse(self::PEOPLE['id']);
+    public function userJson(int $id): JsonResponse {
+        $person = self::PEOPLE[$id];
+        return new JsonResponse($person);
     }
+
+    //Otra opción:
+    // public function userJson(Request $request): JsonResponse {
+    //     $person = $request->query->has('id') ? self::PEOPLE[$request->query->get('id')] : self::PEOPLE;
+    //     return $this->json($person);
+    // }
+
    
 }
