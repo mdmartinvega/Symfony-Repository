@@ -3,7 +3,7 @@
 declare(strict_types=1);
 namespace App\Controller;
 
-use App\Entity\Employee;
+use App\Repository\EmployeeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -31,9 +31,9 @@ class DefaultController extends AbstractController
      * El primer parámetro de Route es la URL a la que queremos asociar la acción.
      * El segundo parámetro de Route es el nombre que queremos dar a la ruta
      */
-    public function index(Request $solicitud): Response 
+    public function index(EmployeeRepository $employeeRepository): Response 
     {
-        echo '<pre>query id: '; var_dump($solicitud->query->get('id')); echo '</pre>';
+        // echo '<pre>query id: '; var_dump($solicitud->query->get('id')); echo '</pre>';
         // echo '<pre>request: '; var_dump($solicitud->request); echo '</pre>';
         // echo '<pre>server: '; var_dump($solicitud->server); echo '</pre>';
         // echo '<pre>file: '; var_dump($solicitud->files); echo '</pre>';
@@ -49,7 +49,14 @@ class DefaultController extends AbstractController
         //symfony console es un comando equivalente a php bin/console
 
         // $name = 'Loli';
-        $people = $this->getDoctrine()->getRepository(Employee::class)->findAll();
+
+        //método1: accediendo al repositorio a través de AbstractController
+        // $people = $this->getDoctrine()->getRepository(Employee::class)->findAll();
+
+
+        //Método 2: creando un parámetro indicando el tipo.
+        $people = $employeeRepository->findAll();
+
         return $this->render('default/index.html.twig', [
             'people'=> $people
             // 'people'=> self::PEOPLE
@@ -81,10 +88,11 @@ class DefaultController extends AbstractController
      * buscará la acción coincidente con la ruta indicada 
      * y mostrará la información asociada
      */
-    public function indexJson(): JsonResponse {
+    public function indexJson(EmployeeRepository $employeeRepository): JsonResponse {
         // return $this->json(self::PEOPLE);Equivalente a lo de abajo
         // return new JsonResponse(self::PEOPLE);
-        return new JsonResponse([]);
+        $people = $employeeRepository->findAll();
+        return $this->json($people);
 
     }
 
@@ -93,15 +101,17 @@ class DefaultController extends AbstractController
      *      "/default/{id}",
      *      name="default_show",
      *      requirements = {
-     *          "id": "[0-3]"
+     *          "id": "\d+"
      *      }
      * )
      */
-    public function show(int $id): Response {
+    public function show(int $id, EmployeeRepository $employeeRepository): Response {
         // var_dump($id); die();
+        $data = $employeeRepository->find($id);
+
         return $this->render('default/show.html.twig', [
             'id' => $id,
-            'person' => []
+            'person' => $data
             // 'person' => self::PEOPLE[$id]
 
         ]);
@@ -133,7 +143,7 @@ class DefaultController extends AbstractController
      *      name="default_show_json",
      *      requirements = {
      *          "_format": "json",
-     *          "id": "[0-3]"
+     *          "id": "\d+"
      *      }
      * )
      * 
@@ -142,17 +152,25 @@ class DefaultController extends AbstractController
      * buscará la acción coincidente con la ruta indicada 
      * y mostrará la información asociada
      */
-    public function userJson(int $id): JsonResponse {
-        $person = [];
+    public function userJson(int $id, EmployeeRepository $employeeRepository): JsonResponse {
+        $data = $employeeRepository->find($id);
         // $person = self::PEOPLE[$id];
 
-        return new JsonResponse($person);
+        return $this->json($data);
     }
 
     //Otra opción:
     // public function userJson(Request $request): JsonResponse {
     //     $person = $request->query->has('id') ? self::PEOPLE[$request->query->get('id')] : self::PEOPLE;
     //     return $this->json($person);
+
+    // public function indexJson(Request $request, EmployeeRepository $employeeRepository): JsonResponse {
+    //     $data = $request->query->has('id') ? 
+    //         $employeeRepository->find($request->query->get('id')) :
+    //         $employeeRepository->findAll();
+
+    //     return $this->json($data);
+    // }
     // }
 
    
