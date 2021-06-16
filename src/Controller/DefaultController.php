@@ -3,6 +3,7 @@
 declare(strict_types=1);
 namespace App\Controller;
 
+use App\Entity\Employee;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -15,12 +16,14 @@ use Symfony\Component\Routing\Annotation\Route;
 //que pone a disposición nuestra multitud de caracteristicas
 class DefaultController extends AbstractController
 {
-    const PEOPLE = [
-        ['name' => 'Carlos', 'email' => 'carlos@correo.com', 'age' => 30, 'city' => 'Benalmádena'],
-        ['name' => 'Carmen', 'email' => 'carmen@correo.com', 'age' => 25, 'city' => 'Fuengirola'],
-        ['name' => 'Carmelo', 'email' => 'carmelo@correo.com', 'age' => 35, 'city' => 'Torremolinos'],
-        ['name' => 'Carolina', 'email' => 'carolina@correo.com', 'age' => 38, 'city' => 'Málaga'],
-    ];
+
+    // Lo comentamos para trabajar con la BBDD
+    // const PEOPLE = [
+    //     ['name' => 'Carlos', 'email' => 'carlos@correo.com', 'age' => 30, 'city' => 'Benalmádena'],
+    //     ['name' => 'Carmen', 'email' => 'carmen@correo.com', 'age' => 25, 'city' => 'Fuengirola'],
+    //     ['name' => 'Carmelo', 'email' => 'carmelo@correo.com', 'age' => 35, 'city' => 'Torremolinos'],
+    //     ['name' => 'Carolina', 'email' => 'carolina@correo.com', 'age' => 38, 'city' => 'Málaga'],
+    // ];
 
     /**
      * @Route("/default", name="default_index")
@@ -45,12 +48,18 @@ class DefaultController extends AbstractController
 
         //symfony console es un comando equivalente a php bin/console
 
-        $name = 'Loli';
-
+        // $name = 'Loli';
+        $people = $this->getDoctrine()->getRepository(Employee::class)->findAll();
         return $this->render('default/index.html.twig', [
-            'people'=> self::PEOPLE
+            'people'=> $people
+            // 'people'=> self::PEOPLE
         ]);   
     }
+
+
+
+
+
     /**
      * @Route("/saludo", name="default_saludo")
      */
@@ -74,7 +83,9 @@ class DefaultController extends AbstractController
      */
     public function indexJson(): JsonResponse {
         // return $this->json(self::PEOPLE);Equivalente a lo de abajo
-        return new JsonResponse(self::PEOPLE);
+        // return new JsonResponse(self::PEOPLE);
+        return new JsonResponse([]);
+
     }
 
      /**
@@ -90,7 +101,9 @@ class DefaultController extends AbstractController
         // var_dump($id); die();
         return $this->render('default/show.html.twig', [
             'id' => $id,
-            'person' => self::PEOPLE[$id]
+            'person' => []
+            // 'person' => self::PEOPLE[$id]
+
         ]);
     }
 
@@ -130,7 +143,9 @@ class DefaultController extends AbstractController
      * y mostrará la información asociada
      */
     public function userJson(int $id): JsonResponse {
-        $person = self::PEOPLE[$id];
+        $person = [];
+        // $person = self::PEOPLE[$id];
+
         return new JsonResponse($person);
     }
 
