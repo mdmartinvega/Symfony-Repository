@@ -19,6 +19,50 @@ class EmployeeRepository extends ServiceEntityRepository
         parent::__construct($registry, Employee::class);
     }
 
+    public function findByTermStrict(string $term)
+    {
+        $queryBuilder = $this->createQueryBuilder('e'); //Primera letra en minúscula de la entidad
+        //SELECT * FROM amazing_employees;
+
+        $queryBuilder->where('e.name = :term');
+        //SELECT * FROM amazing_employees WHERE e.name = :term;
+
+        $queryBuilder->orWhere('e.email = :term');
+        //SELECT * FROM amazing_employees WHERE e.name = :term or e.email = :term;
+
+        $queryBuilder->orWhere('e.city = :term');
+        //SELECT * FROM amazing_employees WHERE e.name = :term or e.email = :term or e.city = :term;
+
+        $queryBuilder->setParameter('term', $term);
+        $queryBuilder->orderBy('e.id', 'ASC');
+        //Si $term = 'hola'
+                //SELECT * FROM amazing_employees WHERE e.name = hoal or e.email = hola or e.city = hola;
+
+        $query = $queryBuilder->getQuery();
+
+        return $query->getResult();
+
+    }
+
+    public function findByTerm(string $term)
+    {
+        $queryBuilder = $this->createQueryBuilder('e');
+
+        $queryBuilder->where(
+            $queryBuilder->expr()->orX(
+                $queryBuilder->expr()->like('e.name', ':term'), 
+                $queryBuilder->expr()->like('e.email', ':term'),
+                $queryBuilder->expr()->like('e.city', ':term')
+            )
+        );
+
+        $queryBuilder->setParameter('term', '%'.$term.'%');
+        $queryBuilder->orderBy('e.id', 'ASC');
+
+        return $queryBuilder->getQuery()->getResult();
+
+    }
+
     // /**
     //  * @return Employee[] Returns an array of Employee objects
     //  */

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 namespace App\Controller;
 
+use App\Entity\Employee;
 use App\Repository\EmployeeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -31,8 +32,16 @@ class DefaultController extends AbstractController
      * El primer parámetro de Route es la URL a la que queremos asociar la acción.
      * El segundo parámetro de Route es el nombre que queremos dar a la ruta
      */
-    public function index(EmployeeRepository $employeeRepository): Response 
+    public function index(Request $request, EmployeeRepository $employeeRepository): Response 
     {
+
+        if ($request->query->has('term')) {
+            $people = $employeeRepository->findByTerm($request->query->get('term'));
+
+            return $this->render('default/index.html.twig', [
+                'people'=> $people
+            ]); 
+        }
         // echo '<pre>query id: '; var_dump($solicitud->query->get('id')); echo '</pre>';
         // echo '<pre>request: '; var_dump($solicitud->request); echo '</pre>';
         // echo '<pre>server: '; var_dump($solicitud->server); echo '</pre>';
@@ -53,9 +62,12 @@ class DefaultController extends AbstractController
         //método1: accediendo al repositorio a través de AbstractController
         // $people = $this->getDoctrine()->getRepository(Employee::class)->findAll();
 
-
+        $order = [];
+        if ($request->query->has('orderBy')) {
+            $order[$request->query->get('orderBy')] = $request->query->get('orderDir', 'ASC');
+        }
         //Método 2: creando un parámetro indicando el tipo.
-        $people = $employeeRepository->findAll();
+        $people = $employeeRepository->findBy([], $order);
 
         return $this->render('default/index.html.twig', [
             'people'=> $people
@@ -116,6 +128,16 @@ class DefaultController extends AbstractController
 
         ]);
     }
+
+    //Opción para inyectar directamente un objeto del tipo indicado como parámetro 
+    //intentando hacer un match del parámetro de la ruta con alguna de las propiedadas
+    //del objeto requerido
+    // public function show(Employee $employee): Response {
+    //     return $this->render('default/show.html.twig', [
+    //         'person' => $employee
+    //     ]);
+    // }
+
 
     /**
      * @Route("/redirect-to-home", name="default_redirect_to_home")
