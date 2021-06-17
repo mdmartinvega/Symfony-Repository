@@ -109,12 +109,26 @@ class ApiEmployeesController extends AbstractController
      * Cualquier dígito del 1 al 9 y el + que se puede repetir
      */
 
-    public function update(int $id): Response
-    {
-        return $this->json([
-            'method' => 'PUT',
-            'description' => 'Actualiza un recurso empleado con id: '.$id.'.',
-        ]);
+    public function update(
+        EntityManagerInterface $entityManager,
+        Employee $employee,
+        Request $request
+        ): Response
+
+    {   
+        $data = $request->request;
+
+        $employee->setName($data->get('name'));
+        $employee->setEmail($data->get('email'));
+        $employee->setAge($data->get('age'));
+        $employee->setCity($data->get('city'));
+        $employee->setPhone($data->get('phone'));
+
+        $entityManager->persist($employee);
+
+        $entityManager->flush();
+
+        return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
      /**
@@ -130,22 +144,22 @@ class ApiEmployeesController extends AbstractController
      */
 
     public function remove(
-        Employee $employee,
-        EntityManagerInterface $entityManager
-        ): Response
+        int $id,
+        EntityManagerInterface $entityManager,
+        EmployeeRepository $employeeRepository
+    ): Response
     {
+        $employee = $employeeRepository->find($id);
 
-        // $employee = $employeeRepository->find($id);
+        if(!$employee) {
+            return $this->json([
+                'message' => sprintf('No he encontrado el empledo con id.: %s', $id)
+            ], Response::HTTP_NOT_FOUND);
+        }
 
-        // if(!$employee) {
-        //     return $this->json([
-        //         'message' => sprint('No he encontrado el empleado con ese id')
-        //     ], Response::HTTP_NO_CONTENT)
-        // }
         dump($employee);
 
-        //remove prepara el sistema pero no ejecuta la sentencia
-
+        // remove() prepara el sistema pero NO ejecuta la sentencia.
         $entityManager->remove($employee);
         $entityManager->flush();
 
