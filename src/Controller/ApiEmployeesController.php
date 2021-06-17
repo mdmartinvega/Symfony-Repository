@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\Employee;
 use App\Repository\EmployeeRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -60,22 +61,39 @@ class ApiEmployeesController extends AbstractController
      * )
      */
 
-    public function add(): Response
-    {
+    public function add(
+        Request $request,
+        EntityManagerInterface $entityManager): Response
+    {   
+        $data = $request->request;
         $employee = new Employee();
 
-        $employee->setName('Luis');
-        $employee->setEmail('luis@correo.com');
-        $employee->setAge(37);
-        $employee->setCity('Málaga');
-        $employee->setPhone('632451789');
+        $employee->setName($data->get('name'));
+        $employee->setEmail($data->get('email'));
+        $employee->setAge($data->get('age'));
+        $employee->setCity($data->get('city'));
+        $employee->setPhone($data->get('phone'));
+
+        $entityManager->persist($employee);
+
+        //Hasta aquí employee aún no tiene id asignado
+        
+        $entityManager->flush();
 
         dump($employee);
 
-        return $this->json([
-            'method' => 'POST',
-            'description' => 'Crea un recurso empleado',
-        ]);
+        return $this->json(
+            $employee,
+            Response::HTTP_CREATED,
+            [
+                'Location' => $this->generateUrl(
+                    'api_employees_get',
+                    [
+                        'id' => $employee->getId()
+                    ]
+                )
+            ]
+        );
     }
 
 
