@@ -77,7 +77,7 @@ class ApiEmployeesController extends AbstractController
         $entityManager->persist($employee);
 
         //Hasta aquí employee aún no tiene id asignado
-        
+
         $entityManager->flush();
 
         dump($employee);
@@ -129,12 +129,27 @@ class ApiEmployeesController extends AbstractController
      * Cualquier dígito del 1 al 9 y el + que se puede repetir
      */
 
-    public function remove(int $id): Response
+    public function remove(
+        Employee $employee,
+        EntityManagerInterface $entityManager
+        ): Response
     {
-        return $this->json([
-            'method' => 'DELETE',
-            'description' => 'Elimina un recurso empleado con id: '.$id.'.',
-        ]);
+
+        // $employee = $employeeRepository->find($id);
+
+        // if(!$employee) {
+        //     return $this->json([
+        //         'message' => sprint('No he encontrado el empleado con ese id')
+        //     ], Response::HTTP_NO_CONTENT)
+        // }
+        dump($employee);
+
+        //remove prepara el sistema pero no ejecuta la sentencia
+
+        $entityManager->remove($employee);
+        $entityManager->flush();
+
+        return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 
 }
