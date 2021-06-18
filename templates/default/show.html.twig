@@ -10,6 +10,7 @@
                 <th>Edad</th>
                 <th>Localidad</th>
                 <th>Departamento</th>
+                <th>Proyectos</th>
 
             </tr>
         </thead>
@@ -19,7 +20,9 @@
                 <td><a href="{{path('default_show', { id:id }) }}">{{person.email}}</a></td>
                 <td>{{person.age}}</td>
                 <td>{{person.city}}</td>
-                <td>{{person.department}}</td>
+                <td>{{person.department.name}}</td>
+                <td>{{person.projects|join(', ')}}</td>
+
             </tr>
         </tbody>
     </table>

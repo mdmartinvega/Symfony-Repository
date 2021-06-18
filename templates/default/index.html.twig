@@ -14,6 +14,7 @@
                 <th>Edad <a href="{{ path('default_index', { orderBy: 'age', orderDir: 'DESC'}) }}">⬆</a>&nbsp;<a href="{{ path('default_index', { orderBy: 'age', orderDir: 'ASC'}) }}">⬇</a></th>                
                 <th>Localidad <a href="{{ path('default_index', { orderBy: 'city', orderDir: 'DESC'}) }}">⬆</a>&nbsp;<a href="{{ path('default_index', { orderBy: 'city', orderDir: 'ASC'}) }}">⬇</a></th>                
                 <th>Departamento</th>
+                <th>Proyectos</th>
                 <th>Acciones</th>
 
             </tr>
@@ -25,7 +26,8 @@
                 <td>{{ person.email }}</td>
                 <td>{{person.age}}</td>
                 <td>{{person.city}}</td>
-                <td>{{person.department}}</td>
+                <td>{{person.department.name}}</td>
+                <td>{{person.projects|join(', ')}}</td>
                <td>
                     <ul>
                         <li><a href="{{ path('default_show', { id: person.id }) }}">Ver en formato HTML</a></li>

@@ -100,11 +100,38 @@ class DefaultController extends AbstractController
      * buscará la acción coincidente con la ruta indicada 
      * y mostrará la información asociada
      */
-    public function indexJson(EmployeeRepository $employeeRepository): JsonResponse {
+    public function indexJson(Request $request, EmployeeRepository $employeeRepository): JsonResponse {
         // return $this->json(self::PEOPLE);Equivalente a lo de abajo
         // return new JsonResponse(self::PEOPLE);
-        $people = $employeeRepository->findAll();
-        return $this->json($people);
+        $result = $request->query->has('id') ?
+        $employeeRepository->find($request->query->get('id')) :
+        $employeeRepository->findAll();
+
+        $data = [];
+
+        foreach ($result as $employee) {
+            $projects = [];
+
+            foreach($employee->getProjects() as $project) {
+                array_push($projects, [
+                    'id' => $project->getId(),    
+                    'name' => $project->getName(),    
+                ]);
+            }
+
+            array_push($data, [
+                'name' => $employee->getName(),
+                'email' => $employee->getEmail(),
+                'city' => $employee->getCity(),
+                'department' => [
+                    'id' => $employee->getDepartment()->getId(),
+                    'name' => $employee->getDepartment()->getName(),
+                ],
+                'projects' => $projects
+            ]);
+        }
+
+        return $this->json($data);
 
     }
 
@@ -177,7 +204,7 @@ class DefaultController extends AbstractController
     public function userJson(int $id, EmployeeRepository $employeeRepository): JsonResponse {
         $data = $employeeRepository->find($id);
         // $person = self::PEOPLE[$id];
-
+        
         return $this->json($data);
     }
 
