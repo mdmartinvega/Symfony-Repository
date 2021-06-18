@@ -110,25 +110,7 @@ class DefaultController extends AbstractController
         $data = [];
 
         foreach ($result as $employee) {
-            $projects = [];
-
-            foreach($employee->getProjects() as $project) {
-                array_push($projects, [
-                    'id' => $project->getId(),    
-                    'name' => $project->getName(),    
-                ]);
-            }
-
-            array_push($data, [
-                'name' => $employee->getName(),
-                'email' => $employee->getEmail(),
-                'city' => $employee->getCity(),
-                'department' => [
-                    'id' => $employee->getDepartment()->getId(),
-                    'name' => $employee->getDepartment()->getName(),
-                ],
-                'projects' => $projects
-            ]);
+            array_push($data, $this->normalizeEmployee($employee));
         }
 
         return $this->json($data);
@@ -182,6 +164,28 @@ class DefaultController extends AbstractController
 
     }
 
+    private function normalizeEmployee (Employee $employee): ?array {
+        $projects = [];
+
+        foreach($employee->getProjects() as $project) {
+            array_push($projects, [
+                'id' => $project->getId(),    
+                'name' => $project->getName(),    
+            ]);
+        }
+
+        return [
+            'name' => $employee->getName(),
+            'email' => $employee->getEmail(),
+            'city' => $employee->getCity(),
+            'department' => [
+                'id' => $employee->getDepartment()->getId(),
+                'name' => $employee->getDepartment()->getName(),
+            ],
+            'projects' => $projects
+        ];
+    }
+
     //EJERCICIO
     //Crear el recurso para obtener una representación
     //de UN empleado enb formato JSON
@@ -202,9 +206,9 @@ class DefaultController extends AbstractController
      * y mostrará la información asociada
      */
     public function userJson(int $id, EmployeeRepository $employeeRepository): JsonResponse {
-        $data = $employeeRepository->find($id);
-        // $person = self::PEOPLE[$id];
-        
+        $result = $employeeRepository->find($id);
+        $data = $this->normalizeEmployee($result);
+
         return $this->json($data);
     }
 
