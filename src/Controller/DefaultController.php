@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Service\EmployeeNormalize;
 
 
 //AbstractController es un controlador de Symfony
@@ -100,7 +101,7 @@ class DefaultController extends AbstractController
      * buscará la acción coincidente con la ruta indicada 
      * y mostrará la información asociada
      */
-    public function indexJson(Request $request, EmployeeRepository $employeeRepository): JsonResponse {
+    public function indexJson(EmployeeNormalize $employeeNormalize, Request $request, EmployeeRepository $employeeRepository): JsonResponse {
         // return $this->json(self::PEOPLE);Equivalente a lo de abajo
         // return new JsonResponse(self::PEOPLE);
         $result = $request->query->has('id') ?
@@ -110,7 +111,7 @@ class DefaultController extends AbstractController
         $data = [];
 
         foreach ($result as $employee) {
-            array_push($data, $this->normalizeEmployee($employee));
+            array_push($data, $employeeNormalize->employeeNormalize($employee));
         }
 
         return $this->json($data);
@@ -164,7 +165,7 @@ class DefaultController extends AbstractController
 
     }
 
-    private function normalizeEmployee (Employee $employee): ?array {
+    private function employeeNormalize (Employee $employee): ?array {
         $projects = [];
 
         foreach($employee->getProjects() as $project) {
@@ -205,9 +206,9 @@ class DefaultController extends AbstractController
      * buscará la acción coincidente con la ruta indicada 
      * y mostrará la información asociada
      */
-    public function userJson(int $id, EmployeeRepository $employeeRepository): JsonResponse {
+    public function userJson(int $id, EmployeeRepository $employeeRepository, EmployeeNormalize $employeeNormalize): JsonResponse {
         $result = $employeeRepository->find($id);
-        $data = $this->normalizeEmployee($result);
+        $data = $employeeNormalize->employeeNormalize($result);
 
         return $this->json($data);
     }

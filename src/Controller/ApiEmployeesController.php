@@ -4,7 +4,9 @@ namespace App\Controller;
 
 
 use App\Entity\Employee;
+use App\Repository\DepartmentRepository;
 use App\Repository\EmployeeRepository;
+use App\Service\EmployeeNormalize;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -24,14 +26,28 @@ class ApiEmployeesController extends AbstractController
      *      name="cget",
      *      methods={"GET"})
      */
-    public function index(Request $request, EmployeeRepository $employeeRepository): Response
+    public function index(Request $request, EmployeeRepository $employeeRepository, EmployeeNormalize $employeeNormalize): Response
     {
         if($request->query->has('term')) {
-            $people = $employeeRepository->findByTerm($request->query->get('term'));
-            return $this->json($people);
+            $result= $employeeRepository->findByTerm($request->query->get('term'));
+
+            $data = [];
+
+            foreach ($result as $employee) {
+                $data[]= $employeeNormalize->employeeNormalize($employee);
+            }
+            return $this->json($data);
         }
 
-        return $this->json($employeeRepository->findAll());
+        $result = $employeeRepository->findAll();
+
+        $data = [];
+
+        foreach ($result as $employee) {
+            $data[]= $employeeNormalize->employeeNormalize($employee);
+        }
+
+        return $this->json($data);
     }
 
      /**
@@ -48,9 +64,11 @@ class ApiEmployeesController extends AbstractController
 
     
 
-    public function show(Employee $employee): Response
+    public function show(
+        Employee $employee,
+        EmployeeNormalize $employeeNormalize): Response
     {
-        return $this->json($employee);
+        return $this->json($employeeNormalize->employeeNormalize($employee));
     }
 
 
@@ -65,11 +83,15 @@ class ApiEmployeesController extends AbstractController
     public function add(
         Request $request,
         EntityManagerInterface $entityManager,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        DepartmentRepository $departmentRepository,
+        EmployeeNormalize $employeeNormalize
         
     ): Response
     {   
         $data = $request->request;
+
+        $department = $departmentRepository->find($data->get('department_id'));
         $employee = new Employee();
 
         $employee->setName($data->get('name'));
@@ -77,6 +99,7 @@ class ApiEmployeesController extends AbstractController
         $employee->setAge($data->get('age'));
         $employee->setCity($data->get('city'));
         $employee->setPhone($data->get('phone'));
+        $employee->setDepartment($department);
 
         $errors = $validator->validate($employee);
         
@@ -106,7 +129,7 @@ class ApiEmployeesController extends AbstractController
         dump($employee);
 
         return $this->json(
-            $employee,
+            $employeeNormalize->employeeNormalize($employee),
             Response::HTTP_CREATED,
             [
                 'Location' => $this->generateUrl(
