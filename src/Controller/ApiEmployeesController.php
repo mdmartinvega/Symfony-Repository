@@ -9,9 +9,11 @@ use App\Repository\EmployeeRepository;
 use App\Service\EmployeeNormalize;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -85,11 +87,17 @@ class ApiEmployeesController extends AbstractController
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
         DepartmentRepository $departmentRepository,
-        EmployeeNormalize $employeeNormalize
+        EmployeeNormalize $employeeNormalize,
+        SluggerInterface $slug
         
     ): Response
     {   
         $data = $request->request;
+
+        //Mirar como funciona y que nos devuelve en symfony console server:dump
+        dump($data);
+        dump($request->files);
+      
 
         $department = $departmentRepository->find($data->get('department_id'));
         $employee = new Employee();
@@ -100,6 +108,32 @@ class ApiEmployeesController extends AbstractController
         $employee->setCity($data->get('city'));
         $employee->setPhone($data->get('phone'));
         $employee->setDepartment($department);
+
+        if($request->files->has('avatar')) {
+            $avatarFile = $request->files->get('avatar');
+
+            $avatarOriginalFileName = pathinfo($avatarFile->getClientOriginalName(), PATHINFO_FILENAME);
+            dump($avatarOriginalFileName);
+
+            $saveFileName = $slug->slug($avatarOriginalFileName);
+            $avatarNewFileName = $saveFileName.'-'.uniqid().'.'.$avatarFile->guessExtension();
+
+            dump($avatarNewFileName);
+
+            //Mover fichero
+
+            try {
+                $avatarFile->move(
+                    $request->server->get('DOCUMENT_ROOT') . DIRECTORY_SEPARATOR . 'employee/avatar',
+                $avatarNewFileName);
+
+            } catch (FileException $e) {
+                throw new \Exception($e->getMessage());
+            }
+
+        }
+
+        die();
 
         $errors = $validator->validate($employee);
         
