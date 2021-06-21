@@ -131,9 +131,9 @@ class ApiEmployeesController extends AbstractController
                 throw new \Exception($e->getMessage());
             }
 
-        }
+            $employee->setAvatar($avatarNewFileName);
 
-        die();
+        }
 
         $errors = $validator->validate($employee);
         
