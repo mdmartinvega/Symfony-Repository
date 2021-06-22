@@ -129,8 +129,13 @@ class DefaultController extends AbstractController
      */
     public function show(int $id, EmployeeRepository $employeeRepository): Response {
         // var_dump($id); die();
+        dump($this->getUser());
+        dump($this->isGranted('ROLE_USER'));
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        
         $data = $employeeRepository->find($id);
-
+       
+        
         return $this->render('default/show.html.twig', [
             'id' => $id,
             'person' => $data
