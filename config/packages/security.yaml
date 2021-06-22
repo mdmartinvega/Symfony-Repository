@@ -16,6 +16,17 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+            # Copiar y pegar
+            # /api/login
+        # api:
+        #     pattern: ^/api
+        #     provider: app_user_provider
+        #     json_login:
+        #         check_path: /api/login
+                # Indicar expresamente los parámetros de las credenciales si son distintos 
+                # de username y password
+                # username_path: email
+                # password_path: pass
         main:
             lazy: true
             provider: app_user_provider
@@ -36,3 +47,5 @@ security:
     access_control:
         - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/default, roles: ROLE_USER }
+        - { path: ^/api/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/api, roles: ROLE_USER }
